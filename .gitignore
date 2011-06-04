@@ -1,0 +1,7 @@
+*.class
+*.jar
+*.log
+*.pom
+target/
+project/boot/
+*.swp
