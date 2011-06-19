@@ -4,8 +4,8 @@ trait ConsumerStorage {
    def getConsumer(key: String): Option[Consumer] 
 }
 
-trait TokenStorage {
-   def generateVerifier: String
+trait TokenStorage { this: TokenGenerator =>
+   def generateVerifier: String = generateToken(4)
    def store(request: ConsumerRequest)
    def get(requestKey: String): Option[ConsumerRequest]   
 }

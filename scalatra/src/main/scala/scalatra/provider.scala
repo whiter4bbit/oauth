@@ -1,7 +1,6 @@
 package info.whiter4bbit.oauth.scalatra
 
 import info.whiter4bbit.oauth._
-import org.slf4j.LoggerFactory
 import scala.util.DynamicVariable
 import OAuthHeader._
 
@@ -9,7 +8,6 @@ import org.scalatra._
 import java.net.URL
 
 trait OAuthProviderFilter extends ScalatraFilter with ScalatraHelpers { 
-   private val logger = LoggerFactory.getLogger(getClass.getName)    
    def storage: OAuthStandardStorage 
 
    val provider = new OAuthProvider(storage) 
@@ -23,28 +21,30 @@ trait OAuthProviderFilter extends ScalatraFilter with ScalatraHelpers {
    
    post(requestTokenPath) { 
       header("Authorization").map((header) => {
-           val url = request.getRequestURL.toString
-	   val bundle = RequestBundle("POST", url, header)	     
-	   provider.getToken(bundle).fold((error) => {
-	      halt(401)
-	   }, (request) => {
-	      val token = (request.token, request.tokenSecret)
-	      "oauth_token=%s&oauth_token_secret=%s".format(token._1, token._2)
-	   })
+         val url = request.getRequestURL.toString
+	 val bundle = RequestBundle("POST", url, header)	     
+	 provider.getToken(bundle).fold((error) => {
+	    println("Error is" + error)
+	    halt(401)
+	 }, (request) => {
+	    val token = (request.token, request.tokenSecret)
+	    "oauth_token=%s&oauth_token_secret=%s".format(token._1, token._2)
+	 })
       }).getOrElse({
          halt(400)
       })
-   }   
+   } 
 
    post(accessTokenPath) {
       header("Authorization").map((header) => {
-           val url = request.getRequestURL.toString
-	   val bundle = RequestBundle("POST", url, header)	     
-	   provider.getAccessToken(bundle).fold((error) => {
-	      halt(401)
-	   }, (request) => {
-	      "oauth_token=%s&oauth_token_secret=%s".format(request.token, request.tokenSecret)
-	   })
+         val url = request.getRequestURL.toString
+	 val bundle = RequestBundle("POST", url, header)	     
+	 provider.getAccessToken(bundle).fold((error) => {
+	    println("Error is" + error)
+	    halt(401)
+	 }, (request) => {
+	    "oauth_token=%s&oauth_token_secret=%s".format(request.token, request.tokenSecret)
+	 })
       }).getOrElse({
          halt(400)
       })
@@ -53,10 +53,11 @@ trait OAuthProviderFilter extends ScalatraFilter with ScalatraHelpers {
    post("/authenticate") { 
       params.get("token").map( (token) => {
          provider.getVerifier(token).fold((e) => {
+	    println("Error is" + e)
 	    halt(401)
 	 }, (verifier) => {
 	    if (verifier.callback == "oob") {
-	       <p>verifier: {{verifier.verifier}}</p>
+	       verifier.verifier + ""
 	    } else {
 	       redirect(verifier.callback + "&oauth_token=%s&oauth_verifier=%s".format(verifier.token, verifier.verifier))
 	    }
@@ -70,11 +71,11 @@ trait OAuthProviderFilter extends ScalatraFilter with ScalatraHelpers {
       val res = for (token <- params.get("oauth_token");
          message <- provider.getTokenRequest(token)) yield { 
          <form action="/authenticate" method="POST"> 
-             <input type="hidden" name="token" value={{token}}/>
-             User name: <input type="text" name="username"/> <br/>
-             Password: <input type="password" name="password"/> <br/>
-             <input type="submit" value="Login"/> 
-          </form>
+           <input type="hidden" name="token" value={{token}}/>
+           User name: <input type="text" name="username"/> <br/>
+           Password: <input type="password" name="password"/> <br/>
+           <input type="submit" value="Login"/> 
+         </form>
       }
       res.getOrElse(halt(400))
    }
@@ -84,6 +85,7 @@ trait OAuthProviderFilter extends ScalatraFilter with ScalatraHelpers {
          val url = request.getRequestURL.toString
 	 val bundle = RequestBundle("GET", url, header)
 	 provider.getResource(bundle).fold((error) => {
+	     println("Error is" + error)
 	     halt(401)
 	 }, (request) => {
 	     _oauthRequest.withValue(request)(f)
