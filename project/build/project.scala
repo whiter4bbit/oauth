@@ -7,7 +7,7 @@ class OAuthProvider(info: ProjectInfo) extends ParentProject(info) {
    lazy val example_provider = project("example_provider", "oauth-example-provider", new ExampleProviderProject(_), scalatra, mongodb_storage) 
 
    class CoreProject(info: ProjectInfo) extends DefaultProject(info) {
-      val scalaz = "org.scalaz" %% "scalaz-core" % "6.0.2-SNAPSHOT"
+      val scalaz = "org.scalaz" %% "scalaz-core" % "6.0.1"
       val commonsLang = "commons-lang" % "commons-lang" % "2.3"
       //specs
       val specs2 = "org.specs2" %% "specs2" % "1.3" % "test"

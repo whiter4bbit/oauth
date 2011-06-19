@@ -1,0 +1,5 @@
+network={
+	ssid="AlcoHub"
+	#psk="asdfgbvcxz"
+	psk=afa6848ea140197fa344466c9c36829b7bdb563562ae593c8f6ffa12a4d3822f
+}
