@@ -20,6 +20,8 @@ class OAuthProvider(info: ProjectInfo) extends ParentProject(info) {
       val scalatra = "org.scalatra" %% "scalatra" % scalatraVersion
       val servletApi = "org.mortbay.jetty" % "servlet-api" % "2.5-20081211" % "provided"
       val slf4jBinding = "ch.qos.logback" % "logback-classic" % "0.9.25" % "runtime"
+      //temp solution, wile lift-json-scalaz fix for java.util.Date support will be not accepted
+      val liftJson = "net.liftweb" %% "lift-json-scalaz" % "2.4-SNAPSHOT"
 
       val specs2 = "org.specs2" %% "specs2" % "1.3" % "test"
       def specs2Framework = new TestFramework("org.specs2.runner.SpecsFramework")
@@ -34,17 +36,17 @@ class OAuthProvider(info: ProjectInfo) extends ParentProject(info) {
    class ExampleProviderProject(info: ProjectInfo) extends DefaultWebProject(info) {
       val scalatraVersion = "2.0.0-SNAPSHOT"
       val scalatra = "org.scalatra" %% "scalatra" % scalatraVersion
+      val scalatraSpecs2 = "org.scalatra" %% "scalatra-specs" % scalatraVersion
       val scalate = "org.scalatra" %% "scalatra-scalate" % scalatraVersion
       val servletApi = "org.mortbay.jetty" % "servlet-api" % "2.5-20081211" % "provided"
       val scalatest = "org.scalatra" %% "scalatra-scalatest" % scalatraVersion % "test"
       val slf4jBinding = "ch.qos.logback" % "logback-classic" % "0.9.25" % "runtime"
       val casbah = "com.mongodb.casbah" % "casbah_2.9.0-1" % "2.1.5.0"      
       val liftJson = "net.liftweb" %% "lift-json-scalaz" % "2.4-SNAPSHOT"
+      val scalaz = "org.scalaz" %% "scalaz-core" % "6.0.1"
 
-      val specs2 = "org.specs2" %% "specs2" % "1.3" % "test"
-      def specs2Framework = new TestFramework("org.specs2.runner.SpecsFramework")		   
- 
-      override def testFrameworks = super.testFrameworks ++ Seq(specs2Framework)
+      val specs = "org.specs" % "specs" % "1.4.3" % "test"
+      val chttp = "whiter4bbit.info" %% "chttp" % "1.0"
    }
    
    //repos

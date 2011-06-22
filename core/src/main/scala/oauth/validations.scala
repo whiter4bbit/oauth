@@ -79,12 +79,10 @@ trait OAuthValidations extends Errors {
 	     if (request.verifier == verifier) {
 	        verifier.success
 	     } else {
-	        //invalidVerifier 
 		error("Invalid verifier: Found '%s', wanted: '%s'".format(verifier, request.verifier)).fail
 	     }
 	  }	  
 	  case r @ _ => {
-	     //invalidVerifier
 	     error("Invalid verifier: Invalid previos requests, found: %s".format(r)).fail
      	  }
        }

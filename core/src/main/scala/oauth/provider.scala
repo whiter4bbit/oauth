@@ -76,7 +76,7 @@ class OAuthProvider(val storage: OAuthStandardStorage) extends OAuthValidations 
        case Some(request: TokenRequest) => {
          val verifier = storage.generateVerifier
 	 val r = VerificationRequest(request.consumer, request.callback, verifier, request.token, request.tokenSecret)
-	 storage.store(r)	 
+	 storage.store(r) 
          r.success
 	}
 	case _ => error("Invalid request").fail

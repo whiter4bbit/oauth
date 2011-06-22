@@ -6,66 +6,61 @@ import OAuthHeader._
 
 import org.scalatra._
 import java.net.URL
+import scalaz._
+import Scalaz._
 
-trait OAuthProviderFilter extends ScalatraFilter with ScalatraHelpers { 
+trait OAuthProviderFilter extends ScalatraFilter with Scalatraz { 
    def storage: OAuthStandardStorage 
 
-   val provider = new OAuthProvider(storage) 
+   private val provider = new OAuthProvider(storage) 
 
    val requestTokenPath = "/oauth/request_token"
    val accessTokenPath = "/oauth/access_token"
    val authenticationPath = "/oauth/authenticate"
 
-   val _oauthRequest = new DynamicVariable[ConsumerRequest](null) 
+   private val _oauthRequest = new DynamicVariable[ConsumerRequest](null) 
    def oauthRequest = _oauthRequest value
    
-   post(requestTokenPath) { 
-      header("Authorization").map((header) => {
-         val url = request.getRequestURL.toString
-	 val bundle = RequestBundle("POST", url, header)	     
-	 provider.getToken(bundle).fold((error) => {
-	    println("Error is" + error)
-	    halt(401)
-	 }, (request) => {
-	    val token = (request.token, request.tokenSecret)
-	    "oauth_token=%s&oauth_token_secret=%s".format(token._1, token._2)
-	 })
-      }).getOrElse({
-         halt(400)
-      })
+   private def getBundle(method: String = "POST") = headerz("Authorization").map(RequestBundle(method, request.getRequestURL.toString, _))
+
+   postz(requestTokenPath) { 
+      for { 
+         bundle <- getBundle();
+         request <- provider.getToken(bundle)
+      } yield {
+         "oauth_token=%s&oauth_token_secret=%s".format(request.token, request.tokenSecret)
+      }
    } 
 
-   post(accessTokenPath) {
-      header("Authorization").map((header) => {
-         val url = request.getRequestURL.toString
-	 val bundle = RequestBundle("POST", url, header)	     
-	 provider.getAccessToken(bundle).fold((error) => {
-	    println("Error is" + error)
-	    halt(401)
-	 }, (request) => {
-	    "oauth_token=%s&oauth_token_secret=%s".format(request.token, request.tokenSecret)
-	 })
-      }).getOrElse({
-         halt(400)
-      })
+   postz(accessTokenPath) {
+      for {
+         bundle <- getBundle();
+	 request <- provider.getAccessToken(bundle)
+      } yield {
+         "oauth_token=%s&oauth_token_secret=%s".format(request.token, request.tokenSecret)
+      }
    }
 
-   post("/authenticate") { 
-      params.get("token").map( (token) => {
-         provider.getVerifier(token).fold((e) => {
-	    println("Error is" + e)
-	    halt(401)
-	 }, (verifier) => {
-	    if (verifier.callback == "oob") {
-	       verifier.verifier + ""
-	    } else {
-	       redirect(verifier.callback + "&oauth_token=%s&oauth_verifier=%s".format(verifier.token, verifier.verifier))
-	    }
+   postz("/authenticate") {
+      for {
+         token <- paramz("token");
+	 verifier <- provider.getVerifier(token)
+      } yield {
+         if (verifier.callback == "oob") {
+	    verifier.verifier + ""
+	 } else {
+	    redirect(verifier.callback + "&oauth_token=%s&oauth_verifier=%s".format(verifier.token, verifier.verifier))
+	 }
+      }
+   }
+
+   def protectedAction(method: String, f: => Validation[Any, Any]) = {
+      getBundle(method).flatMap((bundle) => {
+         provider.getResource(bundle).flatMap((request) => {
+	    _oauthRequest.withValue(request)(f)
 	 })
-      }).getOrElse({
-        halt(400)	
       })
-   }   
+   }
 
    get(authenticationPath) { 
       val res = for (token <- params.get("oauth_token");
@@ -80,21 +75,6 @@ trait OAuthProviderFilter extends ScalatraFilter with ScalatraHelpers {
       res.getOrElse(halt(400))
    }
 
-   def protectedAction(f: => Any) =  {
-      header("Authorization").map((header) => {
-         val url = request.getRequestURL.toString
-	 val bundle = RequestBundle("GET", url, header)
-	 provider.getResource(bundle).fold((error) => {
-	     println("Error is" + error)
-	     halt(401)
-	 }, (request) => {
-	     _oauthRequest.withValue(request)(f)
-	 })
-      }).getOrElse({
-         halt(400) 
-      })
-   }
-
-   def protectedGet(route: String)(f: => Any) = get(route)(protectedAction(f))
-   def protectedPost(route: String)(f: => Any) = post(route)(protectedAction(f))
+   def protectedGet(route: String)(f: => Validation[Any, Any]) = getz(route)(protectedAction("GET", f))   
+   def protectedPost(route: String)(f: => Validation[Any, Any]) = postz(route)(protectedAction("POST", f))
 }

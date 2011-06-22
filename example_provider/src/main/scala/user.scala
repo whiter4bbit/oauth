@@ -14,7 +14,6 @@ trait UserMongoCollection {
 case class User(val login: String, val password: String, val consumerKey: String, val consumerSecret: String)
 
 trait UserService extends TokenGenerator { self: UserMongoCollection with TokenGenerator => 
-   
    val logger = LoggerFactory.getLogger(getClass)
 
    def generateKey = self.generateToken(32)
@@ -32,6 +31,21 @@ trait UserService extends TokenGenerator { self: UserMongoCollection with TokenG
           logger.info("User %s already exists" format login)
 	  "User %s already exists".format(login).fail
        }
+   }
+
+   def find(consumerKey: String): Validation[String, User] = {
+       (for {
+          found <- self.users.findOne(MongoDBObject("consumerKey" -> consumerKey));
+	  login <- found.getAs[String]("login");
+	  password <- found.getAs[String]("password");
+	  conumserKey <- found.getAs[String]("consumerKey");
+	  consumerSecret <- found.getAs[String]("consumerSecret")
+       } yield {
+          User(login, password, consumerKey, consumerSecret).success
+       }).getOrElse({
+          println("Consumer with key %s not found" format consumerKey)
+          "Consumer with key %s not found".fail
+       })       
    }
 }
 
