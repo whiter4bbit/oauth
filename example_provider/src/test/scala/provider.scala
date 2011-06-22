@@ -27,7 +27,6 @@ class RestAPISpec extends EventsAPISpec {
 	    user.consumerSecret must notBeNull
 	 }
       }
-
       "do not create user with login, that already exists" in {
          val json = compact(render(Map("login" -> "pasha", 
 	                               "password" -> "54321")))				       
