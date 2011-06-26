@@ -77,4 +77,5 @@ trait OAuthProviderFilter extends ScalatraFilter with Scalatraz {
 
    def protectedGet(route: String)(f: => Validation[Any, Any]) = getz(route)(protectedAction("GET", f))   
    def protectedPost(route: String)(f: => Validation[Any, Any]) = postz(route)(protectedAction("POST", f))
+   def protectedPut(route: String)(f: => Validation[Any, Any]) = putz(route)(protectedAction("PUT", f))
 }
