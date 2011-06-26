@@ -31,4 +31,5 @@ trait Scalatraz { self: ScalatraKernel =>
 
    def getz(route: String)(f: => Validation[Any, Any]) = get(route)(expand(f))
    def postz(route: String)(f: => Validation[Any, Any]) = post(route)(expand(f))
+   def putz(route: String)(f: => Validation[Any, Any]) = put(route)(expand(f))
 }
